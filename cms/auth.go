@@ -6,6 +6,7 @@ import (
     "net/http"
     "encoding/json"
     "errors"
+    "github.com/go-martini/martini"
 )
 
 
@@ -38,4 +39,24 @@ func Authenticate(w http.ResponseWriter, r *http.Request ) (appengine.Context, e
     }
 
     return c, nil
+}
+
+func AuthenticationHandler(c martini.Context, w http.ResponseWriter, r *http.Request) {
+
+    var ac appengine.Context
+    err := ErrUnauthorized
+
+    if r.Method == "GET" {
+        ac = appengine.NewContext(r)
+    } else {
+
+        ac, err = Authenticate(w, r)
+
+        if err == ErrUnauthorized {
+            // error already written to response
+            return
+        }
+    }
+
+    c.Map(ac) // *appengine.Context
 }
